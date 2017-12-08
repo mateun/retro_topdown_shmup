@@ -3,6 +3,13 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
+GLfloat vVertices[] = {
+		0, 0.5f, 0.0f,
+		-0.5f, -0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f
+	};
+
+GLuint vb;
 
 GLuint loadShader(const char* shaderSrc, GLenum type) 
 {
@@ -92,6 +99,15 @@ int initShaders()
 	}		
 	
 	glUseProgram(programObject);
+
+	// init vertexbuffers
+	glGenBuffers(1, &vb);
+	SDL_Log("vb: %u", vb);
+
+	glBindBuffer(GL_ARRAY_BUFFER, &vb);
+	
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 9, vVertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 int main(int argc, char** args) 
@@ -157,11 +173,7 @@ int main(int argc, char** args)
 		
 	glClearColor(1,1,0,1);
 
-	GLfloat vVertices[] = {
-		0, 0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f
-	};
+	
 
 	SDL_Event event;
 	while (true) 
@@ -186,7 +198,8 @@ int main(int argc, char** args)
 		
 
 		glClear(GL_COLOR_BUFFER_BIT);
-
+	
+		glBindBuffer(GL_ARRAY_BUFFER, vb);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
 		glEnableVertexAttribArray(0);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
