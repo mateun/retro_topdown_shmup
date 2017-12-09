@@ -11,14 +11,22 @@ GLfloat vVertices[] = {
 		
 	};
 
+GLubyte vColors[] = {
+	255, 255, 0,
+	100, 100, 20,
+	200, 0, 100, 
+	40, 200, 0
+};
+
 GLushort vIndices[] = {
 	0, 1, 2, 
 	2, 3, 0
 };
 
-GLuint buffers[2];
+GLuint buffers[3];
 unsigned short numVertices = 12;
 unsigned short numIndices = 6;
+unsigned short numColors = 12;
 
 
 GLuint loadShader(const char* shaderSrc, GLenum type) 
@@ -60,16 +68,20 @@ int initShaders()
 {
 	GLbyte vShaderStr[] = 
 		"attribute vec4 vPosition;\n"
+		"attribute vec3 color;		\n"
+		"varying vec3 col;				\n"
 		"void main()\n"
 		"{\n"
 		"	gl_Position = vPosition;\n"
+		" col = color;						\n"
 		"}\n";
 
 	GLbyte fShaderStr[] = 
 		"precision mediump float;			\n"
+		"varying vec3 col;						\n"
 		"void main() 									\n"
 		"{														\n"
-		"	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+		"	gl_FragColor = vec4(col, 1.0);\n"
 		"}														\n";
 
 	GLuint vertexShader, fragmentShader, programObject;
@@ -110,13 +122,20 @@ int initShaders()
 	
 	glUseProgram(programObject);
 
+	GLint posIndex = glGetAttribLocation(programObject, "vPosition");
+	GLint colIndex = glGetAttribLocation(programObject, "color");
+	SDL_Log("posIndex: %d colIndex: %d", posIndex, colIndex);
+
 	// init vertexbuffers
-	glGenBuffers(2, buffers);
-	SDL_Log("vb: %d", buffers[0]);
-	SDL_Log("ib: %d", buffers[1]);
+	glGenBuffers(3, buffers);
+	SDL_Log("vb  : %d", buffers[0]);
+	SDL_Log("ib  : %d", buffers[1]);
+	SDL_Log("colb: %d", buffers[2]);
 
 	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * numVertices, vVertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLubyte) * numColors, vColors, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * numIndices , 
@@ -152,16 +171,6 @@ int main(int argc, char** args)
 
 	const GLubyte* version = glGetString(GL_VERSION);
 	printf("version: %s\n", version);
-
-	/*glewExperimental=  true;
-	GLenum err = glewInit();
-
-	if (GLEW_OK != err) 
-	{
-		SDL_Log("glew init failed %s", glewGetErrorString(err));
-		return 1;
-	}*/
-
 	
 	// Init our joystick
 	if (SDL_NumJoysticks() < 1) 
@@ -212,10 +221,15 @@ int main(int argc, char** args)
 
 		glClear(GL_COLOR_BUFFER_BIT);
 	
-		glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
 		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (const void*)0);
+		
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
+		glVertexAttribPointer(1, 3, GL_UNSIGNED_BYTE, GL_TRUE, 0, (const void*) 0);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
 		glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
 
 		SDL_GL_SwapWindow(window);
