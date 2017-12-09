@@ -4,12 +4,22 @@
 #include <GLES2/gl2ext.h>
 
 GLfloat vVertices[] = {
-		0, 0.5f, 0.0f,
+		-0.5f, 0.5f, 0.0f,
 		-0.5f, -0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f
+		0.5f, -0.5f, 0.0f, 
+		0.5f, 0.5f, 0.0f
+		
 	};
 
-GLuint vb;
+GLushort vIndices[] = {
+	0, 1, 2, 
+	2, 3, 0
+};
+
+GLuint buffers[2];
+unsigned short numVertices = 12;
+unsigned short numIndices = 6;
+
 
 GLuint loadShader(const char* shaderSrc, GLenum type) 
 {
@@ -101,13 +111,16 @@ int initShaders()
 	glUseProgram(programObject);
 
 	// init vertexbuffers
-	glGenBuffers(1, &vb);
-	SDL_Log("vb: %u", vb);
+	glGenBuffers(2, buffers);
+	SDL_Log("vb: %d", buffers[0]);
+	SDL_Log("ib: %d", buffers[1]);
 
-	glBindBuffer(GL_ARRAY_BUFFER, &vb);
-	
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 9, vVertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * numVertices, vVertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * numIndices , 
+		vIndices, GL_STATIC_DRAW);
 }
 
 int main(int argc, char** args) 
@@ -199,10 +212,11 @@ int main(int argc, char** args)
 
 		glClear(GL_COLOR_BUFFER_BIT);
 	
-		glBindBuffer(GL_ARRAY_BUFFER, vb);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
 		glEnableVertexAttribArray(0);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (const void*)0);
+		glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
 
 		SDL_GL_SwapWindow(window);
 	}	
