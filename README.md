@@ -15,4 +15,13 @@ environment variable HOST_X86 like so:
 
 `export HOST_X86=true`
 
-This will then lead to lookup for different libraries
+This will then lead to lookup for different libraries inside the build script. 
+
+To invoke the build script, I recommend to create a separate folder "build", 
+and to invoke the building from inside this folder: 
+
+```bash
+$ mkdir build
+$ cd build
+$ ../build.sh
+```
