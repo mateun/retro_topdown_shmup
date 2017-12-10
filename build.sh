@@ -2,7 +2,7 @@ echo "Compiling and linking"
 
 echo ${HOST_X86}
 
-if [[ -z "${HOST_X86}" ]]; then
+if [ -n "$HOST_X86" ]; then
   GLES_LIB="GLESv2"
 else
 	# This is the ARM case 
